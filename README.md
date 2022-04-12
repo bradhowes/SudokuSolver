@@ -7,7 +7,7 @@ Simple Swift playground that shows the solution (if it exists) to a Sudoku puzzl
 The puzzle is defined using an array of arrays of `Int` values with `0` values indicating unknown values. Here is the configuration for a very hard
 puzzle (shown above).
 
-```
+```swift
 let puzzle = [
   [0, 0, 0, 0, 9, 0, 1, 6, 0],
   [6, 3, 0, 0, 2, 0, 0, 0, 0],
@@ -23,7 +23,7 @@ let puzzle = [
 
 Getting a solution:
 
-```
+```swift
 let solved = Sudoku.solve(board: puzzle)
 ```
 
