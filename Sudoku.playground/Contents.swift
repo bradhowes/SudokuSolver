@@ -28,57 +28,55 @@ let diabolical = [
 ]
 
 let config = diabolical
-let solved = Sudoku.solve(board: config)
+let solution = Sudoku.solve(board: config)
 
 class MyViewController : UIViewController {
+
+  var borderLayer: CALayer?
+  var blocks: UIView!
+
   override func loadView() {
     let view = UIView()
     view.backgroundColor = .white
-
-    let rows = UIStackView()
-    rows.backgroundColor = .black
-    rows.axis = .vertical
-    rows.distribution = .equalSpacing
-    rows.spacing = 2
-    rows.translatesAutoresizingMaskIntoConstraints = false
-
-    for rowIndex in 0..<9 {
-
-      let row = UIStackView()
-      row.backgroundColor = .black
-      row.axis = .horizontal
-      row.distribution = .fillEqually
-      row.spacing = 2
-
-      for colIndex in 0..<9 {
-        let value = solved[rowIndex][colIndex]
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 26)
-        label.backgroundColor = config[rowIndex][colIndex] == 0 ? .green : .white
-        label.text = " \(value) "
-        label.textColor = .black
-        row.addArrangedSubview(label)
-      }
-      rows.addArrangedSubview(row)
-    }
-
-    view.addSubview(rows)
-
-    view.addConstraints(
-      NSLayoutConstraint.constraints(
-        withVisualFormat: "V:[view]-(<=1)-[rows]",
-        options: NSLayoutConstraint.FormatOptions.alignAllCenterX,
-        metrics: nil,
-        views: ["view":view, "rows":rows]) +
-      NSLayoutConstraint.constraints(
-        withVisualFormat: "H:[view]-(<=1)-[rows]",
-        options: NSLayoutConstraint.FormatOptions.alignAllCenterY,
-        metrics: nil,
-        views: ["view":view, "rows":rows])
-    )
-
+    blocks = ViewBuilder.buildFrom(config: config, solution: solution)
+    view.addCenteredSubview(blocks)
     self.view = view
   }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    guard borderLayer == nil else { return }
+    borderLayer = blocks?.addExternalBorder(borderWidth: 4.0, borderColor: .black)
+  }
 }
+
+extension UIView {
+
+  func addCenteredSubview(_ child: UIView) {
+    addSubview(child)
+    let dict = ["view": self, "child": child]
+    addConstraints(
+      NSLayoutConstraint.constraints(
+        withVisualFormat: "V:[view]-(<=1)-[child]-(<=1)-[view]", options: .alignAllCenterX, metrics: nil, views: dict) +
+      NSLayoutConstraint.constraints(
+        withVisualFormat: "H:[view]-(<=1)-[child]-(<=1)-[view]", options: .alignAllCenterY, metrics: nil, views: dict)
+    )
+  }
+
+  func addExternalBorder(borderWidth: CGFloat, borderColor: UIColor) -> CALayer {
+    let externalBorder = CALayer()
+    externalBorder.frame = CGRect(x: -borderWidth, y: -borderWidth,
+                                  width: frame.size.width + 2 * borderWidth,
+                                  height: frame.size.height + 2 * borderWidth)
+    externalBorder.borderColor = borderColor.cgColor
+    externalBorder.borderWidth = borderWidth
+
+    layer.insertSublayer(externalBorder, at: 0)
+    layer.masksToBounds = false
+
+    return externalBorder
+  }
+}
+
 // Present the view controller in the Live View window
 PlaygroundPage.current.liveView = MyViewController()
