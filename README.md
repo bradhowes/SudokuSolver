@@ -21,10 +21,32 @@ let puzzle = [
 ]
 ```
 
-Getting a solution:
+Alternatively, one can provide a string of 81 characters, where spaces indicate a missing value:
+
+```swift
+let puzzle =
+  "    9 16 " +
+  "63  2    " +
+  " 2       " +
+  "  26     " +
+  "4  1 5  3" +
+  "17       " +
+  "9    4  6" +
+  "     78 4" +
+  "  3    2 "
+```
+
+Getting a solution from the first form:
 
 ```swift
 let solved = Sudoku.solve(board: puzzle)
 ```
 
-The playground shows the solution in green and the original puzzle values in white.
+Getting a solution from the string form:
+
+```swift
+let solved = Sudoku.solve(board: decode(puzzle))
+```
+
+The playground shows the solution in green and the original puzzle values in white. Cycle thru different puzzles with the "◀" and "▶" at the top.
+if a puzzle has multiple solutions, use the "◀" and "▶" at the bottom to cycle through them.
