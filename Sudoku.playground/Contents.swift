@@ -1,5 +1,6 @@
 import UIKit
 import PlaygroundSupport
+import CoreGraphics
 
 let easy =
   "  79  281" +
@@ -58,23 +59,102 @@ let unsolvable =
 
 class MyViewController : UIViewController {
 
-  var borderLayer: CALayer?
-  var blocks: UIStackView!
+  var mainView: UIStackView!
+  var prevPuzzleButton: UIButton!
+  var puzzleTitle: UILabel!
+  var nextPuzzleButton: UIButton!
+  var puzzleView: UIStackView?
+  var puzzleViewBackgroundView: UIView?
+  var solutionState: UILabel!
+  var prevSolutionButton: UIButton!
+  var nextSolutionButton: UIButton!
+
   let puzzles = [easy, diabolical, multiple, multiple2, unsolvable]
-  let names = ["easy", "diabolical", "multiple", "multiple2", "unsolvable"]
-  var index = 0
+  let names = ["Easy", "Diabolical", "Multiple", "Multiple 2", "Unsolvable"]
+  var puzzleIndex = 0
+  var solutions: [[[Int]]] = []
+  var solutionIndex = 0
+
+  let prevButtonText = "◀"
+  let nextButtonText = "▶"
+
+  private func pinBackground(_ view: UIView, to stackView: UIStackView) {
+    view.translatesAutoresizingMaskIntoConstraints = false
+    stackView.insertSubview(view, at: 0)
+    view.pin(to: stackView, border: 4)
+  }
 
   override func loadView() {
     let view = UIView()
-    view.backgroundColor = .white
+    view.backgroundColor = .systemBackground
     self.view = view
+    makeMainView()
     showPuzzle()
   }
 
-  override func viewDidLayoutSubviews() {
-    super.viewDidLayoutSubviews()
-    guard borderLayer == nil else { return }
-    borderLayer = blocks?.addExternalBorder(borderWidth: 4.0, borderColor: .black)
+  private func makeMainView() {
+    mainView = UIStackView()
+    mainView.axis = .vertical
+    mainView.distribution = .equalSpacing
+    mainView.spacing = 8
+    mainView.translatesAutoresizingMaskIntoConstraints = false
+    view.addCenteredSubview(mainView)
+
+    makeTitle()
+    makeStatus()
+  }
+
+  private func makeTitle() {
+    let topRow = UIStackView()
+    topRow.axis = .horizontal
+    topRow.distribution = .fillEqually
+    topRow.spacing = 4
+
+    prevPuzzleButton = UIButton(type: .system)
+    prevPuzzleButton.setTitle(prevButtonText, for: .normal)
+    prevPuzzleButton.addTarget(self, action: #selector(previousPuzzle), for: .touchDown)
+    topRow.addArrangedSubview(prevPuzzleButton)
+
+    puzzleTitle = UILabel()
+    puzzleTitle.font = .systemFont(ofSize: 18)
+    puzzleTitle.backgroundColor = .white
+    puzzleTitle.textAlignment = .center
+    puzzleTitle.text = ""
+    puzzleTitle.textColor = .black
+    topRow.addArrangedSubview(puzzleTitle)
+
+    nextPuzzleButton = UIButton(type: .system)
+    nextPuzzleButton.setTitle(nextButtonText, for: .normal)
+    nextPuzzleButton.addTarget(self, action: #selector(nextPuzzle), for: .touchDown)
+    topRow.addArrangedSubview(nextPuzzleButton)
+
+    mainView.addArrangedSubview(topRow)
+  }
+
+  private func makeStatus() {
+    let statusRow = UIStackView()
+    statusRow.axis = .horizontal
+    statusRow.distribution = .fillEqually
+    statusRow.spacing = 4
+
+    prevSolutionButton = UIButton(type: .system)
+    prevSolutionButton.setTitle(prevButtonText, for: .normal)
+    prevSolutionButton.addTarget(self, action: #selector(previousSolution), for: .touchDown)
+    statusRow.addArrangedSubview(prevSolutionButton)
+
+    solutionState = UILabel()
+    solutionState.font = .systemFont(ofSize: 18)
+    solutionState.text = "Unknown"
+    solutionState.textAlignment = .center
+    solutionState.textColor = .systemRed
+    statusRow.addArrangedSubview(solutionState)
+
+    nextSolutionButton = UIButton(type: .system)
+    nextSolutionButton.setTitle(nextButtonText, for: .normal)
+    nextSolutionButton.addTarget(self, action: #selector(nextSolution), for: .touchDown)
+    statusRow.addArrangedSubview(nextSolutionButton)
+
+    mainView.addArrangedSubview(statusRow)
   }
 
   func decode(_ encoded: String) -> [[Int]] {
@@ -87,21 +167,48 @@ class MyViewController : UIViewController {
   }
 
   func showPuzzle() {
-    if blocks != nil {
-      blocks.removeFromSuperview()
-      blocks = nil
-      borderLayer = nil
+
+    puzzleTitle.text = names[puzzleIndex]
+    let puzzle = decode(puzzles[puzzleIndex])
+    solutions = Sudoku.solve(board: puzzle)
+    solutionIndex = 0
+
+    showSolution()
+  }
+
+  func showSolution() {
+
+    puzzleView?.removeFromSuperview()
+    puzzleViewBackgroundView?.removeFromSuperview()
+
+    puzzleViewBackgroundView = UIView()
+    puzzleViewBackgroundView?.backgroundColor = .black
+
+    let puzzle = decode(puzzles[puzzleIndex])
+    let puzzleView = SolutionViewBuilder.buildFrom(config: puzzle, solution: solutions.isEmpty ? nil : solutions[solutionIndex])
+    self.puzzleView = puzzleView
+
+    pinBackground(puzzleViewBackgroundView!, to: puzzleView)
+    mainView.insertArrangedSubview(puzzleView, at: 1)
+
+    switch solutions.count {
+    case 0:
+      solutionState.text = "Unsolvable"
+      solutionState.textColor = .systemRed
+      break
+
+    case 1:
+      solutionState.text = "Unique"
+      solutionState.textColor = .systemGreen
+
+    default:
+      solutionState.text = "\(solutionIndex + 1) of \(solutions.count)"
+      solutionState.textColor = .systemYellow
     }
 
-    let puzzle = decode(puzzles[index])
-    let solution = Sudoku.solve(board: puzzle)
-    blocks = ViewBuilder.buildFrom(config: puzzle,
-                                   name: names[index],
-                                   solution: solution.board,
-                                   solved: solution.solved,
-                                   unique: solution.unique)
-    blocks.addArrangedSubview(addButtons())
-    view.addCenteredSubview(blocks)
+    prevSolutionButton.isEnabled = solutions.count > 1
+    nextSolutionButton.isEnabled = solutions.count > 1
+
     view.setNeedsLayout()
   }
 
@@ -113,27 +220,27 @@ class MyViewController : UIViewController {
     row.spacing = 8
     row.translatesAutoresizingMaskIntoConstraints = false
 
-    let leftButton = UIButton(type: .system)
-    leftButton.setTitle("Prev", for: .normal)
-    leftButton.addTarget(self, action: #selector(previousPuzzle), for: .touchDown)
-    row.addArrangedSubview(leftButton)
-
-    let rightButton = UIButton(type: .system)
-    rightButton.setTitle("Next", for: .normal)
-    rightButton.addTarget(self, action: #selector(nextPuzzle), for: .touchDown)
-    row.addArrangedSubview(rightButton)
-
     return row
   }
 
   @objc func previousPuzzle(sender: UIButton) {
-    index = (index == 0 ? puzzles.count : index) - 1
+    puzzleIndex = (puzzleIndex == 0 ? puzzles.count : puzzleIndex) - 1
     showPuzzle()
   }
 
   @objc func nextPuzzle(sender: UIButton) {
-    index = (index == puzzles.count - 1 ? -1 : index) + 1
+    puzzleIndex = (puzzleIndex == puzzles.count - 1 ? -1 : puzzleIndex) + 1
     showPuzzle()
+  }
+
+  @objc func previousSolution(sender: UIButton) {
+    solutionIndex = (solutionIndex == 0 ? solutions.count : solutionIndex) - 1
+    showSolution()
+  }
+
+  @objc func nextSolution(sender: UIButton) {
+    solutionIndex = (solutionIndex == solutions.count - 1 ? -1 : solutionIndex) + 1
+    showSolution()
   }
 }
 
@@ -150,18 +257,24 @@ extension UIView {
     )
   }
 
-  func addExternalBorder(borderWidth: CGFloat, borderColor: UIColor) -> CALayer {
-    let externalBorder = CALayer()
-    externalBorder.frame = CGRect(x: -borderWidth, y: -borderWidth,
-                                  width: frame.size.width + 2 * borderWidth,
-                                  height: frame.size.height + 2 * borderWidth)
-    externalBorder.borderColor = borderColor.cgColor
-    externalBorder.borderWidth = borderWidth
+  func pin(to view: UIView, border: CGFloat) {
+    let constraints = [
+      leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      topAnchor.constraint(equalTo: view.topAnchor),
+      bottomAnchor.constraint(equalTo: view.bottomAnchor)
+    ]
 
-    layer.insertSublayer(externalBorder, at: 0)
-    layer.masksToBounds = false
+    for each in constraints {
+      if each.secondAnchor == view.leadingAnchor || each.secondAnchor == view.topAnchor {
+        each.constant = -border
+      }
+      else {
+        each.constant = border
+      }
+    }
 
-    return externalBorder
+    NSLayoutConstraint.activate(constraints)
   }
 }
 
