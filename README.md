@@ -2,7 +2,7 @@
 
 Simple Swift playground that shows the solution (if it exists) to a Sudoku puzzle.
 
-![](solution.png)
+![](images/Unique.png)
 
 The puzzle is defined using an array of arrays of `Int` values with `0` values indicating unknown values. Here is the configuration for a very hard
 puzzle (shown above).
@@ -49,4 +49,10 @@ let solved = Sudoku.solve(board: decode(puzzle))
 ```
 
 The playground shows the solution in green and the original puzzle values in white. Cycle thru different puzzles with the "◀" and "▶" at the top.
-if a puzzle has multiple solutions, use the "◀" and "▶" at the bottom to cycle through them.
+if a puzzle has multiple solutions, use the "◀" and "▶" at the bottom to cycle through them:
+
+![](images/Multiple.png)
+
+If a puzzle has no solutions, the origina puzzle is shown with a message saying a solution cannot be found:
+
+![](images/Unsolvable.png)
