@@ -12,7 +12,7 @@ public enum Sudoku {
 }
 
 fileprivate extension Set where Element == Int {
-  static func filled() -> Set { .init([1, 2, 3, 4, 5, 6, 7, 8, 9]) }
+  static func filled() -> Set { .init(1...9) }
 }
 
 fileprivate extension Array where Element == Set<Int> {
@@ -23,7 +23,7 @@ fileprivate extension Array where Element == Set<Int> {
 fileprivate struct Solver {
   // The state of the solution being filled in by the solver
   private(set) var board: [[Int]]
-  // Set to the first solution found by the solver
+  // Collection of solutions found by the solver
   private(set) var solutions = [[[Int]]]()
   // The candidate values available for each row
   private var rows: [Set<Int>] = .filled()
@@ -46,7 +46,7 @@ fileprivate struct Solver {
           // Remove value from candidates in various collections
           rows[row].remove(value)
           columns[col].remove(value)
-          boxes[boxIndex(row: row, col: col)].remove(value)
+          boxes[toBox(row: row, col: col)].remove(value)
         }
       }
     }
@@ -65,27 +65,19 @@ fileprivate struct Solver {
   private mutating func solve(row: Int, col: Int) {
     if row == Sudoku.size {
       solutions.append(board)
-    }
-    else if col == Sudoku.size {
+    } else if col == Sudoku.size {
       solve(row: row + 1, col: 0)
-    }
-    else if board[row][col] != Sudoku.unknown {
+    } else if board[row][col] != Sudoku.unknown {
       solve(row: row, col: col + 1)
-    }
-    else {
-      for value in rows[row] {
-        let box = self.boxIndex(row: row, col: col)
-
-        // Only consider candidate if it is also a candidate in the column and box we are working in
-        if columns[col].contains(value) && boxes[box].contains(value) {
-          pick(value, row: row, col: col, box: box)
-
-          // Recurse to the next column and record how many solutions were found
-          solve(row: row, col: col + 1)
-
-          // Undo all picks before moving to next candidate
-          unpick(value, row: row, col: col, box: box)
-        }
+    } else {
+      let box = toBox(row: row, col: col)
+      // Only consider candidate if it is also a candidate in the column and box we are working in
+      for value in rows[row] where columns[col].contains(value) && boxes[box].contains(value) {
+        pick(value, row: row, col: col, box: box)
+        // Recurse to the next column and record how many solutions were found
+        solve(row: row, col: col + 1)
+        // Undo all picks before moving to next candidate
+        unpick(value, row: row, col: col, box: box)
       }
     }
   }
@@ -103,8 +95,8 @@ fileprivate struct Solver {
     columns[col].insert(value)
     boxes[box].insert(value)
   }
+}
 
-  private func boxIndex(row: Int, col: Int) -> Int {
-    row / Sudoku.boxSize * Sudoku.boxSize + col / Sudoku.boxSize
-  }
+private func toBox(row: Int, col: Int) -> Int {
+  (col < 3 ? 0 : (col < 6 ? 1 : 2)) + (row < 3 ? 0 : (row < 6 ? 3 : 6))
 }
