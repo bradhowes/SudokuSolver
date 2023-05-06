@@ -167,20 +167,16 @@ class MyViewController : UIViewController {
   }
 
   func showPuzzle() {
-
     puzzleTitle.text = names[puzzleIndex]
     let puzzle = decode(puzzles[puzzleIndex])
-    solutions = Sudoku.solve(board: puzzle)
+    solutions = Sudoku.solve(board: puzzle, findOne: false)
     solutionIndex = 0
-
     showSolution()
   }
 
   func showSolution() {
-
     puzzleView?.removeFromSuperview()
     puzzleViewBackgroundView?.removeFromSuperview()
-
     puzzleViewBackgroundView = UIView()
     puzzleViewBackgroundView?.backgroundColor = .black
 
@@ -219,7 +215,6 @@ class MyViewController : UIViewController {
     row.distribution = .fillEqually
     row.spacing = 8
     row.translatesAutoresizingMaskIntoConstraints = false
-
     return row
   }
 

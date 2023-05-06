@@ -5,8 +5,8 @@ public enum Sudoku {
   static let boxSize = 3
   static let unknown = 0
 
-  public static func solve(board: [[Int]]) -> [[[Int]]] {
-    var solver = Solver(board: board)
+  public static func solve(board: [[Int]], findOne: Bool) -> [[[Int]]] {
+    var solver = Solver(board: board, findOne: findOne)
     return solver.solve()
   }
 }
@@ -23,6 +23,7 @@ fileprivate extension Array where Element == Set<Int> {
 fileprivate struct Solver {
   // The state of the solution being filled in by the solver
   private(set) var board: [[Int]]
+  private let findOne: Bool
   // Collection of solutions found by the solver
   private(set) var solutions = [[[Int]]]()
   // The candidate values available for each row
@@ -32,10 +33,12 @@ fileprivate struct Solver {
   // The candidate values available for each box
   private var boxes: [Set<Int>] = .filled()
 
-  init(board: [[Int]]) {
+  init(board: [[Int]], findOne: Bool) {
     precondition(board.count == Sudoku.size)
     precondition(board.first(where: {$0.count != Sudoku.size}) == nil)
+
     self.board = board
+    self.findOne = findOne
 
     // Initialize the various sets used to track picks for missing numbers.
     for row in 0..<Sudoku.size {
@@ -76,6 +79,7 @@ fileprivate struct Solver {
         pick(value, row: row, col: col, box: box)
         // Recurse to the next column and record how many solutions were found
         solve(row: row, col: col + 1)
+        if findOne && !solutions.isEmpty { break }
         // Undo all picks before moving to next candidate
         unpick(value, row: row, col: col, box: box)
       }
