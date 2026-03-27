@@ -2,7 +2,7 @@ import PlaygroundSupport
 import CoreGraphics
 import SwiftUI
 
-let blah =
+let medium =
 "53  7    " +
 "6  195   " +
 " 98    6 " +
@@ -194,8 +194,8 @@ class SudokuViewModel: ObservableObject {
   @Published var solutionIndex = 0
   @Published var solutions: [[[Int]]] = []
 
-  let puzzles = [blah, easy, diabolical, multiple, multiple2, unsolvable].map { decode($0) }
-  let names = ["Blah", "Easy", "Diabolical", "Multiple", "Multiple 2", "Unsolvable"]
+  let puzzles = [easy, medium, diabolical, multiple, multiple2, unsolvable].map { decode($0) }
+  let names = ["Easy", "Medium", "Diabolical", "Multiple", "Multiple 2", "Unsolvable"]
 
   static func decode(_ encoded: String) -> [[Int]] {
     precondition(encoded.count == 9 * 9)
