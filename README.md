@@ -53,6 +53,6 @@ if a puzzle has multiple solutions, use the "◀" and "▶" at the bottom to cyc
 
 ![](images/Multiple.png)
 
-If a puzzle has no solutions, the origina puzzle is shown with a message saying a solution cannot be found:
+If a puzzle has no solutions, the original puzzle is shown with a message saying a solution cannot be found:
 
 ![](images/Unsolvable.png)
