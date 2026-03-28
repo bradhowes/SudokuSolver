@@ -2,72 +2,6 @@ import PlaygroundSupport
 import CoreGraphics
 import SwiftUI
 
-let medium =
-"53  7    " +
-"6  195   " +
-" 98    6 " +
-"8   6   3" +
-"4  8 3  1" +
-"7   2   6" +
-" 6    28 " +
-"   419  5" +
-"    8  79"
-
-let easy =
-"  79  281" +
-"628  3 9 " +
-"4 9     6" +
-"7  6 9832" +
-"1 3      " +
-"8       9" +
-"  6378 2 " +
-" 8 49167 " +
-" 71 2694 "
-
-let diabolical =
-"    9 16 " +
-"63  2    " +
-" 2       " +
-"  26     " +
-"4  1 5  3" +
-"17       " +
-"9    4  6" +
-"     78 4" +
-"  3    2 "
-
-let multiple =
-"  6 7 4 3" +
-"   4  2  " +
-" 7  23 1 " +
-"5     1  " +
-" 4 2 8 6 " +
-"  3     5" +
-" 3 7   5 " +
-"  7  5   " +
-"4 5 1 7  "
-
-let multiple2 =
-"926571483" +
-"351486279" +
-"874923516" +
-"582367194" +
-"149258367" +
-"7631  825" +
-"2387  651" +
-"617835942" +
-"495712738"
-
-let unsolvable =
-"3 79  281" +
-"628  3 9 " +
-"4 9     6" +
-"7  6 9832" +
-"1 3      " +
-"8       9" +
-"  6378 2 " +
-" 8 49167 " +
-" 71 2694 "
-
 struct SudokuView: View {
   @StateObject private var viewModel = SudokuViewModel()
 
@@ -118,7 +52,7 @@ struct SudokuView: View {
         } label: {
           Text("◀")
         }
-        .disabled(viewModel.solutions.isEmpty)
+        .disabled(viewModel.solutions.count < 2)
 
         Text(viewModel.solutionStatusText)
           .font(.system(size: 18))
@@ -131,7 +65,7 @@ struct SudokuView: View {
         } label: {
           Text("▶")
         }
-        .disabled(viewModel.solutions.isEmpty)
+        .disabled(viewModel.solutions.count < 2)
       }
     }
     .animation(.smooth, value: viewModel.puzzleIndex)
@@ -183,7 +117,7 @@ struct CellView: View {
   let color: Color
 
   var body: some View {
-    Text(value == 0 ? "?" : String(value))
+    Text(value == 0 ? " " : String(value))
       .font(.system(size: 18, weight: .semibold))
       .foregroundColor(color)
   }
@@ -193,6 +127,72 @@ class SudokuViewModel: ObservableObject {
   @Published var puzzleIndex = 0
   @Published var solutionIndex = 0
   @Published var solutions: [[[Int]]] = []
+
+  static let medium =
+  "53  7    " +
+  "6  195   " +
+  " 98    6 " +
+  "8   6   3" +
+  "4  8 3  1" +
+  "7   2   6" +
+  " 6    28 " +
+  "   419  5" +
+  "    8  79"
+
+  static let easy =
+  "  79  281" +
+  "628  3 9 " +
+  "4 9     6" +
+  "7  6 9832" +
+  "1 3      " +
+  "8       9" +
+  "  6378 2 " +
+  " 8 49167 " +
+  " 71 2694 "
+
+  static let diabolical =
+  "    9 16 " +
+  "63  2    " +
+  " 2       " +
+  "  26     " +
+  "4  1 5  3" +
+  "17       " +
+  "9    4  6" +
+  "     78 4" +
+  "  3    2 "
+
+  static let multiple =
+  "  6 7 4 3" +
+  "   4  2  " +
+  " 7  23 1 " +
+  "5     1  " +
+  " 4 2 8 6 " +
+  "  3     5" +
+  " 3 7   5 " +
+  "  7  5   " +
+  "4 5 1 7  "
+
+  static let multiple2 =
+  "926571483" +
+  "351486279" +
+  "874923516" +
+  "582367194" +
+  "149258367" +
+  "7631  825" +
+  "2387  651" +
+  "617835942" +
+  "495712738"
+
+  static let unsolvable =
+  "3 79  281" +
+  "628  3 9 " +
+  "4 9     6" +
+  "7  6 9832" +
+  "1 3      " +
+  "8       9" +
+  "  6378 2 " +
+  " 8 49167 " +
+  " 71 2694 "
 
   let puzzles = [easy, medium, diabolical, multiple, multiple2, unsolvable].map { decode($0) }
   let names = ["Easy", "Medium", "Diabolical", "Multiple", "Multiple 2", "Unsolvable"]
