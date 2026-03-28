@@ -11,37 +11,14 @@ public enum Sudoku {
   }
 }
 
-private struct Cell {
-  let row: Int
-  let column: Int
-  let box: Int
-
-  init(row: Int, col: Int) {
-    self.row = row
-    self.column = col
-    self.box = (row / Sudoku.boxSize) * Sudoku.boxSize + (col / Sudoku.boxSize)
-  }
-}
-
-private extension Array where Element == Array<Int> {
-  subscript(_ cell: Cell) -> Int {
-    get {
-      self[cell.row][cell.column]
-    }
-    set {
-      self[cell.row][cell.column] = newValue
-    }
-  }
-}
-
-fileprivate struct Solver {
-
-  // The state of the solution being filled in by the solver
+private struct Solver {
+  // The state of the solution being filled in by the solver.
   private(set) var board: [[Int]]
+  // If true, only compute until the first solution is found. Otherwise, find all solutions.
   private let findOne: Bool
   // Collection of solutions found by the solver
   private(set) var solutions = [[[Int]]]()
-  // Collection of empty cells
+  // Collection of empty cell locations to find values for
   private var empty: [Cell] = []
   // The candidate values available for each row as a collection of bits
   private var rows: [Int] = .init(repeating: 0, count: Sudoku.size)
@@ -50,6 +27,12 @@ fileprivate struct Solver {
   // The candidate values available for each box
   private var boxes: [Int] = .init(repeating: 0, count: Sudoku.size)
 
+  /**
+   Construct a solver for a given board setup.
+
+   - parameter board: the game board to use
+   - parameter findOne: if `true` only find the first solution
+   */
   init(board: [[Int]], findOne: Bool) {
     precondition(board.count == Sudoku.size)
     precondition(board.first(where: {$0.count != Sudoku.size}) == nil)
@@ -74,19 +57,35 @@ fileprivate struct Solver {
     }
   }
 
+  /**
+   Locate the cell with the smallest number of candidate values. This is an optimization that should reduce the chance of needing
+   to backtrack due to a cell having no available values to pick from. Note that this routine can reorder the contents of the
+   `empty` cell collection, so be sure to perform any indexing operations on `empty` after this call.
+
+   This algorithm just loops through the remaining unvisited empty cells to find the next one to fill with a candidate value. It
+   might be possible to use some additional book-keeping to reduce the amount of recalculations.
+
+   - parameter emptyIndex: the current empty index being considered
+   - returns: the found min available value
+   */
   mutating func findMinAvailable(emptyIndex: Int) -> Int {
     var minIndex = emptyIndex
     var minAvailable = 0x1FF
 
     for index in emptyIndex..<empty.count {
       let cell = empty[index]
+
+      // Obtain the bits that are *not* set in any row, column, or box for the current cell
       let available = ~(rows[cell.row] | columns[cell.column] | boxes[cell.box]) & 0x1FF
+
       if available.nonzeroBitCount < minAvailable.nonzeroBitCount {
         minAvailable = available
         minIndex = index
       }
     }
 
+    // If we found a better cell to process than the one we are visiting, swap them now so that we will process the current cell
+    // sometime in the future.
     if minIndex != emptyIndex {
       empty.swapAt(emptyIndex, minIndex)
     }
@@ -122,6 +121,7 @@ fileprivate struct Solver {
       return
     }
 
+    // NOTE: order is important here since `findMinAvailable` can reorder the `empty` array.
     var available = findMinAvailable(emptyIndex: emptyIndex)
     let cell = empty[emptyIndex]
 
@@ -145,3 +145,27 @@ fileprivate struct Solver {
     }
   }
 }
+
+private struct Cell {
+  let row: Int
+  let column: Int
+  let box: Int
+
+  init(row: Int, col: Int) {
+    self.row = row
+    self.column = col
+    self.box = (row / Sudoku.boxSize) * Sudoku.boxSize + (col / Sudoku.boxSize)
+  }
+}
+
+private extension Array where Element == Array<Int> {
+  subscript(_ cell: Cell) -> Int {
+    get {
+      self[cell.row][cell.column]
+    }
+    set {
+      self[cell.row][cell.column] = newValue
+    }
+  }
+}
+

@@ -7,14 +7,22 @@ struct SudokuView: View {
 
   private var solutionStatusText: String {
     switch viewModel.solutions.count {
-    case 0:
-      return "Unsolvable"
-    case 1:
-      return "Unique"
-    default:
-      return "\(viewModel.solutionIndex + 1) of \(viewModel.solutions.count)"
+    case 0: return "Unsolvable"
+    case 1: return "Unique"
+    default: return "\(viewModel.solutionIndex + 1) of \(viewModel.solutions.count)"
     }
   }
+
+  private var solutionStatusColor: Color {
+    switch viewModel.solutions.count {
+    case 0: return .red
+    case 1: return .green
+    default: return .yellow
+    }
+  }
+
+  private let previousButtonLabel = "◀"
+  private let nextButtonLabel = "▶"
 
   var body: some View {
     VStack(spacing: 0) {
@@ -22,7 +30,7 @@ struct SudokuView: View {
         Button {
           viewModel.previousPuzzle()
         } label: {
-          Text("◀")
+          Text(previousButtonLabel)
         }
         .disabled(viewModel.puzzles.isEmpty)
 
@@ -36,7 +44,7 @@ struct SudokuView: View {
         Button {
           viewModel.nextPuzzle()
         } label: {
-          Text("▶")
+          Text(nextButtonLabel)
         }
         .disabled(viewModel.puzzles.isEmpty)
       }
@@ -50,7 +58,7 @@ struct SudokuView: View {
         Button {
           viewModel.previousSolution()
         } label: {
-          Text("◀")
+          Text(previousButtonLabel)
         }
         .disabled(viewModel.solutions.count < 2)
 
@@ -63,7 +71,7 @@ struct SudokuView: View {
         Button {
           viewModel.nextSolution()
         } label: {
-          Text("▶")
+          Text(nextButtonLabel)
         }
         .disabled(viewModel.solutions.count < 2)
       }
@@ -71,17 +79,6 @@ struct SudokuView: View {
     .animation(.smooth, value: viewModel.puzzleIndex)
     .animation(.smooth, value: viewModel.solutionIndex)
     .padding()
-  }
-
-  var solutionStatusColor: Color {
-    switch viewModel.solutions.count {
-    case 0:
-      return .red
-    case 1:
-      return .green
-    default:
-      return .yellow
-    }
   }
 }
 
