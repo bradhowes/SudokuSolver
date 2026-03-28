@@ -5,7 +5,7 @@ Simple Swift playground that shows the solution (if it exists) to a Sudoku puzzl
 ![](images/Unique.png)
 
 The puzzle is defined using an array of arrays of `Int` values with `0` values indicating unknown values. Here is the configuration for a very hard
-puzzle (shown above).
+puzzle:
 
 ```swift
 let puzzle = [
@@ -21,7 +21,7 @@ let puzzle = [
 ]
 ```
 
-Alternatively, one can provide a string of 81 characters, where spaces indicate a missing value:
+Alternatively, one can provide a string of 81 (9x9) characters, where a space indicates a missing value:
 
 ```swift
 let puzzle =
@@ -39,13 +39,13 @@ let puzzle =
 Getting a solution from the first form:
 
 ```swift
-let solved = Sudoku.solve(board: puzzle)
+let solutions = Sudoku.solve(board: puzzle, findOne: false)
 ```
 
 Getting a solution from the string form:
 
 ```swift
-let solved = Sudoku.solve(board: decode(puzzle))
+let solved = Sudoku.solve(board: decode(puzzle), findOne: false)
 ```
 
 The playground shows the solution in green and the original puzzle values in white. Cycle thru different puzzles with the "◀" and "▶" at the top.
