@@ -102,7 +102,6 @@ struct SudokuPuzzleView: View {
               .padding(.leading, (col % 3) == 0 ? 2 : 0)
           }
         }
-        // .padding(.horizontal, 2)
         .padding(.top, (row % 3) == 0 ? 2 : 0)
       }
     }
