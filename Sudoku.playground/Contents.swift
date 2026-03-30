@@ -1,5 +1,4 @@
 import PlaygroundSupport
-import CoreGraphics
 import SwiftUI
 
 struct SudokuView: View {

@@ -19,7 +19,7 @@ private struct Solver {
   // Collection of solutions found by the solver
   private(set) var solutions = [[[Int]]]()
   // Collection of empty cell locations to find values for
-  private var empty: [Cell] = []
+  private var empty: [CellIndex] = []
   // The candidate values available for each row as a collection of bits
   private var rows: [Int] = .init(repeating: 0, count: Sudoku.size)
   // The candidate values available for each column
@@ -43,7 +43,7 @@ private struct Solver {
     for row in 0..<Sudoku.size {
       for col in 0..<Sudoku.size {
         let value = board[row][col]
-        let cell = Cell(row: row, col: col)
+        let cell = CellIndex(row: row, col: col)
         if value == Sudoku.unknown {
           empty.append(cell)
         } else {
@@ -146,7 +146,7 @@ private struct Solver {
   }
 }
 
-private struct Cell {
+private struct CellIndex {
   let row: Int
   let column: Int
   let box: Int
@@ -159,7 +159,7 @@ private struct Cell {
 }
 
 private extension Array where Element == Array<Int> {
-  subscript(_ cell: Cell) -> Int {
+  subscript(_ cell: CellIndex) -> Int {
     get {
       self[cell.row][cell.column]
     }
